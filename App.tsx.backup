@@ -19,8 +19,7 @@ const MODEL_URLS = {
   astronaut: 'https://modelviewer.dev/shared-assets/models/Astronaut.glb',
   // 標準テストモデル
   duck: 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Duck/glTF-Binary/Duck.glb',
-  // あなたのカスタムモデル
-  custom: 'https://raw.githubusercontent.com/rleaf95/New_app_mobile/main/assets/models/robot.glb'
+  custom: 'https://raw.githubusercontent.com/rleaf95/New_app_mobile/main/assets/models/Robot.glb'
 };
 
 const createThreeJSHTML = (url: string) => `
