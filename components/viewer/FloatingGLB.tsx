@@ -176,7 +176,7 @@ const createFloatingGLBHTML = (
                             model.position.y = initialY + Math.sin(time * 0.8) * 0.15;
                             
                             // Y軸回転
-                            const rotationAngle = Math.sin(time * 0.5) * 0.26;
+                            const rotationAngle = Math.sin(time * 0.5) * -0.10;
                             model.rotation.y = rotationAngle;
                             
                             renderer.render(scene, camera);

@@ -3,6 +3,9 @@ import { Dimensions, Platform } from 'react-native';
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 export const isTablet = () => {
+  if (Platform.OS === 'web') {
+    return SCREEN_WIDTH >= 768;
+  }
   const shortDimension = Math.min(SCREEN_WIDTH, SCREEN_HEIGHT);
   return shortDimension >= 600;
 };
@@ -15,9 +18,16 @@ export const getDeviceMode = () => {
   const tablet = isTablet();
   const landscape = isLandscape();
   
-  if (tablet && landscape) return 'tablet-landscape'; 
+  // Web用の判定を追加
+  if (Platform.OS === 'web') {
+    if (SCREEN_WIDTH >= 1024) return 'tablet-landscape';
+    if (SCREEN_WIDTH >= 768) return 'tablet-portrait';
+    return 'phone-portrait';
+  }
+  
+  if (tablet && landscape) return 'tablet-landscape';
   if (tablet && !landscape) return 'tablet-portrait';
-  if (!tablet && !landscape) return 'phone-portrait'; 
+  if (!tablet && !landscape) return 'phone-portrait';
   return 'phone-landscape';
 };
 
@@ -64,3 +74,5 @@ export const responsive = {
     return values[mode] || values['phone-portrait'];
   },
 };
+
+export const isWeb = () => Platform.OS === 'web';

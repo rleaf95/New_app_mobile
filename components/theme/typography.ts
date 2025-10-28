@@ -4,7 +4,7 @@ export const typography = {
   sizes: {
     title: 28,
     subtitle: 20,
-    body: 13,
-    small: 13,
+    body: 14,      // 全デバイスで14px
+    small: 12,
   },
 };

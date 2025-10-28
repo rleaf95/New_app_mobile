@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, SafeAreaView, TouchableOpacity, Alert } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, StyleSheet, SafeAreaView, TouchableOpacity, Alert, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useMode } from '@/contexts/ModeContext';
 import { useAuth } from '@/contexts/AuthContext';
 // import { Button } from '@/components/common/Button';
 import { MODE_INFO } from '@/types/mode';
+import { isWeb } from '@/utils/responsive';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -15,6 +16,14 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    if (isWeb() && mode === 'pos') {
+      Alert.alert('エラー', 'POSモードはWebでは利用できません');
+      clearMode();
+      router.replace('/');
+    }
+  }, [mode]);
+
   const handleLogin = async () => {
     if (!username || !password) {
       Alert.alert('エラー', 'ユーザー名とパスワードを入力してください');
@@ -23,6 +32,11 @@ export default function LoginScreen() {
 
     if (!mode) {
       Alert.alert('エラー', 'モードが選択されていません');
+      return;
+    }
+
+    if (isWeb() && mode === 'pos') {
+      Alert.alert('エラー', 'POSモードはWebでは利用できません');
       return;
     }
 
@@ -42,7 +56,7 @@ export default function LoginScreen() {
     router.back();
   };
 
-  if (!mode) {
+  if (!mode || (isWeb() && mode === 'pos')) {
     return null;
   }
 

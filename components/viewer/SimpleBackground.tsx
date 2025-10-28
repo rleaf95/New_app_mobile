@@ -6,11 +6,11 @@ export function SimpleBackground() {
   return (
     <LinearGradient
       colors={[
-        '#8FA5B8',
-        '#A8BCC9',
-        '#B8C8D4',
+        '#8499acff',
+        '#c8d0d6ff',
+        '#ffffffff',
       ]}
-      locations={[0, 0.5, 1.0]}
+      locations={[0, 0.8, 0.9]}
       style={StyleSheet.absoluteFillObject}
       start={{ x: 0, y: 0 }}
       end={{ x: 0, y: 1 }}

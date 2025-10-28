@@ -120,9 +120,9 @@ const createBackground3DHTML = () => `
             
     // 光る点
     const dotMaterial = new THREE.MeshBasicMaterial({
-      color: 0x60A5FA,
+      color: 0xD3F8FE,
       transparent: true,
-      opacity: 0.8
+      opacity: 0.5
     });
             
     for (let i = 0; i < 15; i++) {
