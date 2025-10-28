@@ -4,10 +4,13 @@ import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useMode } from '../contexts/ModeContext';
-// import { Background3D } from '../components/viewer/Background3D';  // 一時的にコメントアウト
+import { Background3D } from '../components/viewer/Background3D';
+import { FloatingGLB } from '../components/viewer/FloatingGLB';
 import { ModeCard } from '../components/common/ModeCard';
 import { AppText } from '../components/common/AppText';
 import { AppMode } from '../types/mode';
+
+const CUSTOM_GLB_URL = 'https://raw.githubusercontent.com/rleaf95/New_app_mobile/main/assets/models/Robot.glb';
 
 export default function ModeSelectionScreen() {
   const router = useRouter();
@@ -26,11 +29,12 @@ export default function ModeSelectionScreen() {
     <View style={styles.container}>
       <StatusBar style="light" />
       
-      {/* 3D背景を一時的にコメントアウト */}
-      {/* <View style={StyleSheet.absoluteFillObject}>
+      {/* 3D背景 */}
+      <View style={StyleSheet.absoluteFillObject}>
         <Background3D />
-      </View> */}
+      </View>
       
+      {/* グラデーションオーバーレイ */}
       <LinearGradient
         colors={[
           'rgba(255, 255, 255, 0.91)',
@@ -43,6 +47,7 @@ export default function ModeSelectionScreen() {
         end={{ x: 0, y: 0 }}
       />
       
+      {/* UIコンテンツ */}
       <View style={styles.content}>
         <View style={styles.cardsContainer}>
           <ModeCard 
@@ -61,6 +66,17 @@ export default function ModeSelectionScreen() {
           <AppText style={styles.posText}>POS Terminal Setup</AppText>
         </TouchableOpacity>
       </View>
+
+      {/* キャラクター */}
+      <FloatingGLB 
+        modelUrl={CUSTOM_GLB_URL}
+        size={250}
+        position="bottom-right"
+        ambientLightIntensity={1.2}
+        directionalLightIntensity={0.8}
+        frontLightIntensity={1.5}
+        fillLightIntensity={0.6}
+      />
     </View>
   );
 }
@@ -72,18 +88,18 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    marginHorizontal: 40,  // margin: 200 は大きすぎるので調整
+    marginHorizontal: 40,
     marginVertical: 100,
     backgroundColor: 'rgba(255, 255, 255, 0.15)',
     justifyContent: 'center',
     borderRadius: 20,
-    padding: 20,  // 内側の余白を追加
+    padding: 20,
   },
   cardsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginVertical: 20,  // 60から調整
-    marginHorizontal: 20,  // 100から調整
+    marginVertical: 20,
+    marginHorizontal: 20,
     gap: 20,
   },
   posSetup: {
