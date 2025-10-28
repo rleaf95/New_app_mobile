@@ -2,13 +2,15 @@ import React from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
-import { LinearGradient } from 'expo-linear-gradient';
-import { useMode } from '../contexts/ModeContext';
-import { Background3D } from '../components/viewer/Background3D';
-import { FloatingGLB } from '../components/viewer/FloatingGLB';
-import { ModeCard } from '../components/common/ModeCard';
-import { AppText } from '../components/common/AppText';
-import { AppMode } from '../types/mode';
+import { useMode } from '@/contexts/ModeContext';
+import { SimpleBackground } from '@/components/viewer/SimpleBackground';
+import { Background3D } from '@/components/viewer/Background3D';
+import { FloatingBoard } from '@/components/common/FloatingBoard';
+import { FloatingGLB } from '@/components/viewer/FloatingGLB';
+import { ModeCard } from '@/components/common/ModeCard';
+import { AppText } from '@/components/common/AppText';
+import { AppMode } from '@/types/mode';
+import { responsive, moderateScale } from '@/utils/responsive';
 
 const CUSTOM_GLB_URL = 'https://raw.githubusercontent.com/rleaf95/New_app_mobile/main/assets/models/Robot.glb';
 
@@ -25,30 +27,31 @@ export default function ModeSelectionScreen() {
     }
   };
 
+  const glbConfig = responsive.valueByMode({
+    'phone-portrait': {
+      size: 180,
+      position: 'bottom-right' as const,
+    },
+    'tablet-landscape': {
+      size: 300,
+      position: 'bottom-right' as const,
+    },
+  });
+
   return (
     <View style={styles.container}>
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
       
-      {/* 3D背景 */}
-      <View style={StyleSheet.absoluteFillObject}>
+      {/* 1. 最背面：シンプルなグラデーション背景 */}
+      <SimpleBackground />
+      
+      {/* 2. その上：透明な3Dオブジェクト（浮遊する図形） */}
+      <View style={StyleSheet.absoluteFillObject} pointerEvents="none">
         <Background3D />
       </View>
       
-      {/* グラデーションオーバーレイ */}
-      <LinearGradient
-        colors={[
-          'rgba(255, 255, 255, 0.91)',
-          'rgba(212, 222, 230, 0.27)',
-          'rgba(97, 118, 138, 0)',
-        ]}
-        locations={[0.05, 0.30, 1.0]}
-        style={StyleSheet.absoluteFillObject}
-        start={{ x: 0, y: 1 }}
-        end={{ x: 0, y: 0 }}
-      />
-      
-      {/* UIコンテンツ */}
-      <View style={styles.content}>
+      {/* 3. さらに上：浮遊するメインボード */}
+      <FloatingBoard>
         <View style={styles.cardsContainer}>
           <ModeCard 
             title="Sign in as Staff"
@@ -59,23 +62,27 @@ export default function ModeSelectionScreen() {
             onPress={() => handleModeSelect('owner')}
           />
         </View>
+        
         <TouchableOpacity 
           style={styles.posSetup}
           onPress={() => handleModeSelect('pos')}
         >
           <AppText style={styles.posText}>POS Terminal Setup</AppText>
         </TouchableOpacity>
-      </View>
+      </FloatingBoard>
 
-      {/* キャラクター */}
+      {/* 4. 最前面：浮遊するGLBキャラクター */}
       <FloatingGLB 
         modelUrl={CUSTOM_GLB_URL}
-        size={250}
-        position="bottom-right"
-        ambientLightIntensity={1.2}
-        directionalLightIntensity={0.8}
-        frontLightIntensity={1.5}
-        fillLightIntensity={0.6}
+        size={glbConfig.size}
+        position={glbConfig.position}
+        modelYOffset={0.1}
+        cameraPosition={[0, 0.1, 2.5]}
+        cameraLookAt={[0, 0.3, 0]}
+        ambientLightIntensity={1.5}
+        directionalLightIntensity={1.2}
+        frontLightIntensity={2.0}
+        fillLightIntensity={0.8}
       />
     </View>
   );
@@ -84,31 +91,22 @@ export default function ModeSelectionScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#4A5568',
-  },
-  content: {
-    flex: 1,
-    marginHorizontal: 40,
-    marginVertical: 100,
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    justifyContent: 'center',
-    borderRadius: 20,
-    padding: 20,
+    backgroundColor: '#B8C8D4', // フォールバック色
   },
   cardsContainer: {
-    flexDirection: 'row',
+    flexDirection: responsive.value('column', 'row'),
     justifyContent: 'space-between',
-    marginVertical: 20,
-    marginHorizontal: 20,
-    gap: 20,
+    gap: responsive.value(20, 40),
+    marginBottom: responsive.value(30, 40),
   },
   posSetup: {
     alignItems: 'center',
-    marginTop: 20,
+    paddingVertical: moderateScale(12),
   },
   posText: {
-    color: 'rgba(255, 255, 255, 0.8)',
-    fontSize: 16,
+    color: '#4A5568',
+    fontSize: moderateScale(16),
     textDecorationLine: 'underline',
+    fontWeight: '500',
   },
 });

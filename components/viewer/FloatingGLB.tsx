@@ -1,19 +1,25 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Text } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { WebView, WebViewMessageEvent } from 'react-native-webview';
 
 interface FloatingGLBProps {
   modelUrl: string;
   size?: number;
   position?: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left';
+  cameraPosition?: [number, number, number];
+  cameraLookAt?: [number, number, number];
+  modelYOffset? : number;
   ambientLightIntensity?: number;
   directionalLightIntensity?: number;
   frontLightIntensity?: number;
   fillLightIntensity?: number;
+
 }
 
 const createFloatingGLBHTML = (
   url: string,
+  cameraPos: [number, number, number],
+  cameraLook: [number, number, number],
   ambientIntensity: number,
   dirIntensity: number,
   frontIntensity: number,
@@ -58,7 +64,6 @@ const createFloatingGLBHTML = (
             }));
         } else {
             try {
-                // シーン設定
                 const scene = new THREE.Scene();
                 scene.background = null;
                 
@@ -78,14 +83,15 @@ const createFloatingGLBHTML = (
                 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
                 container.appendChild(renderer.domElement);
                 
-                camera.position.set(0, 0.5, 2.5);
-                camera.lookAt(0, 0, 0);
+                // カメラ位置を調整可能に
+                camera.position.set(${cameraPos[0]}, ${cameraPos[1]}, ${cameraPos[2]});
+                camera.lookAt(${cameraLook[0]}, ${cameraLook[1]}, ${cameraLook[2]});
                 
                 // 環境光
                 const ambientLight = new THREE.AmbientLight(0xffffff, ${ambientIntensity});
                 scene.add(ambientLight);
                 
-                // メインライトと影生成
+                // メインライト（上から斜め前）
                 const mainLight = new THREE.DirectionalLight(0xffffff, ${dirIntensity});
                 mainLight.position.set(2, 5, 3);
                 mainLight.castShadow = true;
@@ -95,17 +101,17 @@ const createFloatingGLBHTML = (
                 mainLight.shadow.camera.far = 50;
                 scene.add(mainLight);
                 
-                // 正面ライト（最も明るく）
+                // 正面ライト
                 const frontLight = new THREE.DirectionalLight(0xffffff, ${frontIntensity});
                 frontLight.position.set(0, 2, 5);
                 scene.add(frontLight);
                 
-                // 補助光
+                // 補助光（下から）
                 const fillLight = new THREE.DirectionalLight(0xffffff, ${fillIntensity});
                 fillLight.position.set(0, -2, 3);
                 scene.add(fillLight);
                 
-                // 左右補助光
+                // 左右からの補助光
                 const leftLight = new THREE.DirectionalLight(0xffffff, 0.4);
                 leftLight.position.set(-5, 1, 2);
                 scene.add(leftLight);
@@ -114,7 +120,7 @@ const createFloatingGLBHTML = (
                 rightLight.position.set(5, 1, 2);
                 scene.add(rightLight);
                 
-                // 影を受ける平面（見えない）
+                // 影を受ける平面
                 const shadowPlane = new THREE.Mesh(
                     new THREE.PlaneGeometry(10, 10),
                     new THREE.ShadowMaterial({ opacity: 0.3 })
@@ -132,28 +138,24 @@ const createFloatingGLBHTML = (
                     function(gltf) {
                         const model = gltf.scene;
                         
-                        // 影を設定
                         model.traverse((child) => {
                             if (child.isMesh) {
                                 child.castShadow = true;
                                 child.receiveShadow = true;
-                                // マテリアルを明るく
                                 if (child.material) {
                                     child.material.needsUpdate = true;
                                 }
                             }
                         });
                         
-                        // サイズ正規化
                         const box = new THREE.Box3().setFromObject(model);
                         const size = box.getSize(new THREE.Vector3()).length();
                         const scale = 1.8 / size;
                         model.scale.multiplyScalar(scale);
                         
-                        // 中央配置
                         const center = box.getCenter(new THREE.Vector3());
                         model.position.copy(center).multiplyScalar(-scale);
-                        model.position.y -= 0.3;
+                        model.position.y -= 0;
                         
                         scene.add(model);
                         
@@ -162,22 +164,19 @@ const createFloatingGLBHTML = (
                             type: 'MODEL_LOADED'
                         }));
                         
-                        // アニメーション変数
                         const clock = new THREE.Clock();
                         const initialY = model.position.y;
                         
-                        // ふわふわアニメーション
                         function animate() {
                             requestAnimationFrame(animate);
                             
                             const time = clock.getElapsedTime();
                             
-                            // 上下
+                            // 上下にふわふわ
                             model.position.y = initialY + Math.sin(time * 0.8) * 0.15;
                             
-                            // Y軸回転(正面右向き)
-                            // 0度から30度の間を往復
-                            const rotationAngle = Math.sin(time * 0.5) * 0.26; // 約15度
+                            // Y軸回転
+                            const rotationAngle = Math.sin(time * 0.5) * 0.26;
                             model.rotation.y = rotationAngle;
                             
                             renderer.render(scene, camera);
@@ -198,7 +197,6 @@ const createFloatingGLBHTML = (
                     }
                 );
                 
-                // リサイズ対応
                 window.addEventListener('resize', function() {
                     const w = container.clientWidth;
                     const h = container.clientHeight;
@@ -219,6 +217,8 @@ export function FloatingGLB({
   modelUrl,
   size = 200,
   position = 'bottom-right',
+  cameraPosition = [0, 0.3, 2.5],
+  cameraLookAt = [0, 0.3, 0],
   ambientLightIntensity = 1.5,
   directionalLightIntensity = 1.2,
   frontLightIntensity = 2.0,
@@ -277,6 +277,8 @@ export function FloatingGLB({
         source={{ 
           html: createFloatingGLBHTML(
             modelUrl,
+            cameraPosition,
+            cameraLookAt,
             ambientLightIntensity,
             directionalLightIntensity,
             frontLightIntensity,
